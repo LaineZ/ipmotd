@@ -30,9 +30,9 @@ pub fn get_pages_in_category<S: Into<String>>(category: S) -> anyhow::Result<usi
 
     if let Some(value) = pub_element {
         let text: String = value.text().collect();
-        let mut text_value = text.trim().split(" ").collect::<Vec<&str>>()[0];
+        let mut text_value = text.trim().split(' ').collect::<Vec<&str>>()[0];
 
-        if text_value.ends_with("K") {
+        if text_value.ends_with('K') {
             text_value = &text_value[1..];
             pub_count = text_value.parse().unwrap_or(1) * 1000;
         } else {
@@ -48,15 +48,12 @@ pub fn ip_get<S: Into<String>>(category: S, page: usize) -> anyhow::Result<Vec<S
     let document = Html::parse_document(&body);
     let mut quotes = Vec::new();
 
-    let selector_contents = &Selector::parse("div.text").unwrap();
+    let selector_contents = &Selector::parse("div.main").unwrap();
     let sections = document.select(selector_contents);
 
-    let selector_signature = &Selector::parse("div.signature").unwrap();
-    let sections_sig = document.select(selector_signature);
-
-    for (content, author) in sections.zip(sections_sig) {
+    for content in sections {
         let inner: String = inner_text(content, &Selector::parse("p").unwrap());
-        let inner_author: String = inner_text(author, &Selector::parse("a").unwrap());
+        let inner_author: String = inner_text(content, &Selector::parse("a").unwrap());
         if !inner.ends_with("… показать весь текст …") {
             quotes.push(format!("{}\n\t© {}", inner, inner_author));
         }

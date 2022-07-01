@@ -12,7 +12,6 @@ fn main() -> anyhow::Result<()> {
     let pages = get_pages_in_category(category)?;
 
     let page = rng.gen_range(0..pages);
-    println!("use page: {}", page);
     let quotes = ip_get(category, page)?;
     
     println!("{}", quotes[rng.gen_range(0..quotes.len() - 1)]);
