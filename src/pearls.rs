@@ -4,6 +4,7 @@ use scraper::{ElementRef, Html, Selector};
 use ureq::Agent;
 
 fn http_request(path: &str) -> anyhow::Result<String> {
+    //println!("http request to: {}", path);
     let agent: Agent = ureq::AgentBuilder::new()
         .timeout_read(Duration::from_secs(5))
         .timeout_write(Duration::from_secs(5))
@@ -19,7 +20,12 @@ fn inner_text(selection: ElementRef, selector_contents: &Selector) -> String {
         .collect()
 }
 
-pub fn get_pages_in_category<S: Into<String>>(category: S) -> anyhow::Result<usize> {
+pub fn get_pages_in_category<S: Into<String> + Clone>(category: S) -> anyhow::Result<u64> {
+    // if category is not specified - just return 1. because site cannot inform total publications count
+    if category.clone().into() == "" {
+        return Ok(1)
+    }
+
     let body = http_request(&format!("https://www.inpearls.ru/{}", category.into()))?;
     let document = Html::parse_document(&body);
     let mut pub_count = 1;
@@ -40,10 +46,10 @@ pub fn get_pages_in_category<S: Into<String>>(category: S) -> anyhow::Result<usi
         }
     }
 
-    Ok((pub_count / 20).clamp(1, usize::MAX))
+    Ok((pub_count / 20).clamp(1, u64::MAX))
 }
 
-pub fn ip_get<S: Into<String>>(category: S, page: usize) -> anyhow::Result<Vec<String>> {
+pub fn ip_get<S: Into<String>>(category: S, page: u64) -> anyhow::Result<Vec<String>> {
     let body = http_request(&format!("https://www.inpearls.ru/{}?page={}", category.into(), page))?;
     let document = Html::parse_document(&body);
     let mut quotes = Vec::new();
